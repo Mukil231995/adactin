@@ -1,0 +1,319 @@
+[
+  {
+    "line": 1,
+    "elements": [
+      {
+        "before": [
+          {
+            "result": {
+              "duration": 4361870200,
+              "status": "passed"
+            },
+            "match": {
+              "location": "Hooks.before()"
+            }
+          }
+        ],
+        "line": 29,
+        "name": "Hotel booking in Adactin",
+        "description": "",
+        "id": "booking-hotel-in-adactin;hotel-booking-in-adactin;;2",
+        "after": [
+          {
+            "result": {
+              "duration": 222700,
+              "status": "passed"
+            },
+            "match": {
+              "location": "Hooks.after()"
+            }
+          }
+        ],
+        "type": "scenario",
+        "keyword": "Scenario Outline",
+        "steps": [
+          {
+            "result": {
+              "duration": 7723870400,
+              "status": "passed"
+            },
+            "line": 4,
+            "name": "Enter the url for Adactin",
+            "match": {
+              "location": "HotalBooking.enter_the_url_for_Adactin()"
+            },
+            "keyword": "Given "
+          },
+          {
+            "result": {
+              "duration": 306796000,
+              "status": "passed"
+            },
+            "line": 5,
+            "name": "user enter the \"mukil2318\" and \"Mukil231995\"",
+            "match": {
+              "arguments": [
+                {
+                  "val": "\"mukil2318\"",
+                  "offset": 15
+                },
+                {
+                  "val": "\"Mukil231995\"",
+                  "offset": 31
+                }
+              ],
+              "location": "HotalBooking.user_enter_the_and(String,String)"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "duration": 2754687000,
+              "status": "passed"
+            },
+            "line": 6,
+            "name": "Click the login button",
+            "match": {
+              "location": "HotalBooking.click_the_login_button()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 453500,
+              "status": "passed"
+            },
+            "line": 7,
+            "name": "user go to search hotel page",
+            "match": {
+              "location": "HotalBooking.user_go_to_search_hotel_page()"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "duration": 370257300,
+              "status": "passed"
+            },
+            "line": 8,
+            "name": "select the location",
+            "match": {
+              "location": "HotalBooking.select_the_location()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 235258500,
+              "status": "passed"
+            },
+            "line": 9,
+            "name": "select the hotel",
+            "match": {
+              "location": "HotalBooking.select_the_hotel()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 183780300,
+              "status": "passed"
+            },
+            "line": 10,
+            "name": "select the room type",
+            "match": {
+              "location": "HotalBooking.select_the_room_type()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 152308400,
+              "status": "passed"
+            },
+            "line": 11,
+            "name": "select Number of room",
+            "match": {
+              "location": "HotalBooking.select_Number_of_room()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 286338000,
+              "status": "passed"
+            },
+            "line": 12,
+            "name": "enter the check in and check out date",
+            "match": {
+              "location": "HotalBooking.enter_the_check_in_and_check_out_date()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 137146200,
+              "status": "passed"
+            },
+            "line": 13,
+            "name": "select the number of adult per room",
+            "match": {
+              "location": "HotalBooking.select_the_number_of_adult_per_room()"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "duration": 174636500,
+              "status": "passed"
+            },
+            "line": 14,
+            "name": "select the number of child per room",
+            "match": {
+              "location": "HotalBooking.select_the_number_of_child_per_room()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 1236632900,
+              "status": "passed"
+            },
+            "line": 15,
+            "name": "click the search button",
+            "match": {
+              "location": "HotalBooking.click_the_search_button()"
+            },
+            "keyword": "Then "
+          },
+          {
+            "result": {
+              "duration": 160100,
+              "status": "passed"
+            },
+            "line": 16,
+            "name": "user go to the select hotel page",
+            "match": {
+              "location": "HotalBooking.user_go_to_the_select_hotel_page()"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "duration": 81728500,
+              "status": "passed"
+            },
+            "line": 17,
+            "name": "click radio button of the hotel",
+            "match": {
+              "location": "HotalBooking.click_radio_button_of_the_hotel()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 1499221700,
+              "status": "passed"
+            },
+            "line": 18,
+            "name": "click continue button",
+            "match": {
+              "location": "HotalBooking.click_continue_button()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 120200,
+              "status": "passed"
+            },
+            "line": 19,
+            "name": "User go to the booking page",
+            "match": {
+              "location": "HotalBooking.user_go_to_the_booking_page()"
+            },
+            "keyword": "Then "
+          },
+          {
+            "result": {
+              "duration": 805086000,
+              "status": "passed"
+            },
+            "line": 20,
+            "name": "user enter the first and last name",
+            "match": {
+              "location": "HotalBooking.user_enter_the_first_and_last_name()"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "duration": 136899900,
+              "status": "passed"
+            },
+            "line": 21,
+            "name": "User enter the address",
+            "match": {
+              "location": "HotalBooking.user_enter_the_address()"
+            },
+            "keyword": "Then "
+          },
+          {
+            "result": {
+              "duration": 267903500,
+              "status": "passed"
+            },
+            "line": 22,
+            "name": "enter the card number and card type",
+            "match": {
+              "location": "HotalBooking.enter_the_card_number_and_card_type()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 575866600,
+              "status": "passed"
+            },
+            "line": 23,
+            "name": "select month and year of card expiry",
+            "match": {
+              "location": "HotalBooking.select_month_and_year_of_card_expiry()"
+            },
+            "keyword": "Then "
+          },
+          {
+            "result": {
+              "duration": 133122800,
+              "status": "passed"
+            },
+            "line": 24,
+            "name": "enter cvv number",
+            "match": {
+              "location": "HotalBooking.enter_cvv_number()"
+            },
+            "keyword": "And "
+          },
+          {
+            "result": {
+              "duration": 58062600,
+              "status": "passed"
+            },
+            "line": 25,
+            "name": "Click the booknow button",
+            "match": {
+              "location": "HotalBooking.click_the_booknow_button()"
+            },
+            "keyword": "Then "
+          }
+        ]
+      }
+    ],
+    "name": "Booking Hotel in Adactin",
+    "description": "",
+    "id": "booking-hotel-in-adactin",
+    "keyword": "Feature",
+    "uri": "E:/Users/mukil/eclipse-workspace/com.adactin/featureFile/adactin.feature",
+    "tags": []
+  }
+]
