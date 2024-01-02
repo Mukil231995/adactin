@@ -1,0 +1,448 @@
+package utils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+
+import ch.qos.logback.classic.Logger;
+import stepsDefinitions.NewFeatureStepDefinition;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.*;
+import java.util.*;
+
+public class DataSource {
+	static XSSFWorkbook workbook;
+	static FileInputStream fs;
+	static XSSFSheet orders;
+	static XSSFSheet users;
+	static XSSFSheet deals;
+	static XSSFSheet sheet;
+	static FileOutputStream fos;
+	private final Logger logger = (Logger) LoggerFactory.getLogger(DataSource.class);
+	protected InputStream input = null;
+	protected Properties prop = null;
+	protected Yaml yamlFile = null;
+	static String testData = "";
+	private static Map<String, CSVRecord> testDataRecordsMapDefault = null;
+	private static CSVParser csvParser;
+	static HashMap<String, String> excelData = new HashMap<String, String>();
+	static HashMap<String, String> paymentsData = new HashMap<String, String>();
+	static HashMap<String, String> campaignData = new HashMap<String, String>();
+	static HashMap<String, String> enrollmentData = new HashMap<String, String>();
+
+	public DataSource(String excelPath) {
+		try {
+			fs = new FileInputStream(excelPath);
+			workbook = new XSSFWorkbook(fs);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public DataSource() {
+
+	}
+
+	/**
+	 * This method is used for reading the Test data from the config file.
+	 * 
+	 * @param term
+	 * @return
+	 * @throws IOException
+	 */
+	public String readPropertiesFileForCMD(String term, String strFileName) throws IOException {
+
+		prop = new Properties();
+		FileInputStream fi = new FileInputStream(
+				System.getProperty("user.dir") + "\\src\\main\\resources\\" + strFileName);
+		prop.load(fi);
+		if (System.getProperty("country") != null) {
+			String countryPassed = System.getProperty("country");
+			String languagePassed = System.getProperty("language");
+			String envPassed = System.getProperty("env");
+			prop.setProperty("country", countryPassed);
+			prop.setProperty("language", languagePassed);
+			prop.setProperty("env", envPassed);
+		}
+		if (prop.getProperty(term.toLowerCase()) == null) {
+			return "";
+		} else {
+			return prop.getProperty(term.toLowerCase());
+		}
+	}
+	
+	 public void WritePropertiesFile(String key, String data,String strFileName) {
+	        FileOutputStream fileOut = null;
+	        FileInputStream fileIn = null;
+	        try {
+	            Properties configProperty = new Properties();
+
+	            File file = new File(System.getProperty("user.dir") + "\\src\\main\\resources\\"+ strFileName);
+	            fileIn = new FileInputStream(file);
+	            configProperty.load(fileIn);
+	            configProperty.setProperty(key, data);
+	            fileOut = new FileOutputStream(file);
+	            configProperty.store(fileOut, "sample properties");
+
+	        } catch (Exception ex) {
+	           // Logger.getLogger(WritePropertiesFile.class.getName()).log(Level.SEVERE, null, ex);
+	        } finally {
+
+	            try {
+	                fileOut.close();
+	            } catch (IOException ex) {
+	                //Logger.getLogger(WritePropertiesFile.class.getName()).log(Level.SEVERE, null, ex);
+	            }
+	        }
+	    }
+
+	/**
+	 * This Method is used for reading the Test data from the yaml File.
+	 * 
+	 * @param filename
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+	public Map<Object, Object> getData(String filename) throws FileNotFoundException {
+		yamlFile = new Yaml();
+		FileInputStream yamlFilePath = new FileInputStream(
+				System.getProperty("user.dir") + "\\src\\test\\java\\resources\\testData\\" + filename);
+		System.out.println("YAML FIle Path ::" + yamlFilePath);
+		System.out.println("YAML FIle Path ::" + yamlFilePath.toString());
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map = yamlFile.load(yamlFilePath);
+		return map;
+	}
+
+	/**
+	 * This method is for the reading the row instance from csv file
+	 * 
+	 * @param testDataFile
+	 * @return
+	 * @throws IOException
+	 */
+	public static Map<String, CSVRecord> getDataInstanceCSV(String testDataFile) throws IOException {
+		if (testData.equals(testDataFile)) {
+			if (testDataRecordsMapDefault != null) {
+				return testDataRecordsMapDefault;
+			}
+		}
+		try {
+			String env = "test";
+			String dataFilePath = null;
+			Reader reader = null;
+			dataFilePath = System.getProperty("user.dir") + File.separator + "src" + File.separator + "test"
+					+ File.separator + "resources" + File.separator + testDataFile + "_" + env + ".csv";
+			testDataRecordsMapDefault = new HashMap<String, CSVRecord>();
+			File filecheck = new File(dataFilePath);
+			if (filecheck.exists()) {
+				System.out.println("File exist");
+				reader = new FileReader(dataFilePath);
+			} else {
+				String testDataFileTemp = testDataFile + "_" + env + ".csv";
+				String fileName = "testdata/" + testDataFileTemp;
+				File file = File.createTempFile(testDataFileTemp, ".csv");
+				InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream(fileName);
+				FileUtils.copyInputStreamToFile(in, file);
+				reader = new FileReader(file);
+				in.close();
+			}
+			BufferedReader bufferReader = new BufferedReader(reader);
+			StringBuilder builder = new StringBuilder();
+			String line;
+			while ((line = bufferReader.readLine()) != null) {
+				builder.append(line.replace("~", ""));
+				builder.append("\n");
+			}
+			final String csvData = builder.toString();
+			csvParser = CSVParser.parse(csvData,
+					CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
+			Iterable<CSVRecord> csvRecords = csvParser.getRecords();
+			// Accessing values by Header names
+			for (CSVRecord csvRow : csvRecords) {
+				String serviceName = csvRow.get("data_id");
+				testDataRecordsMapDefault.put(serviceName, csvRow);
+			}
+			testData = testDataFile;
+			bufferReader.close();
+			reader.close();
+			return testDataRecordsMapDefault;
+		} catch (Exception e) {
+			// put Logger
+		} finally {
+			try {
+				csvParser.close();
+			} catch (Exception e) {
+				// put logger
+			}
+		}
+
+		testData = testDataFile;
+
+		return testDataRecordsMapDefault;
+	}
+
+	/**
+	 * This method is for getting the Column data from Test data CSV file Row
+	 * 
+	 * @param data_ref
+	 * @param columnNames
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getDataCSV(String data_ref, String columnNames) throws IOException {
+		String columnValue = DataSource.getDataInstanceCSV(data_ref.split("\\.")[0]).get(data_ref.split("\\.")[1])
+				.get(columnNames);
+		return columnValue;
+	}
+
+	public static List<Integer> getscenarioAndRequiredColumnNos(String dealsSheet, String fieldName) {
+		List<Integer> columns = new ArrayList<>();
+		deals = workbook.getSheet(dealsSheet);
+		int ScenarioColumn = 0;
+		int requiredColumn = 0;
+		Row headerRow = deals.getRow(0);
+		for (int i = 0; i <= deals.getPhysicalNumberOfRows(); i++) {
+			for (int j = 0; j <= deals.getRow(i).getPhysicalNumberOfCells(); j++) {
+				if (headerRow.getCell(j).getStringCellValue().equalsIgnoreCase("ScenarioID")) {
+					ScenarioColumn = j;
+					columns.add(ScenarioColumn);
+					break;
+				}
+			}
+			for (int j = 0; j <= deals.getRow(i).getPhysicalNumberOfCells(); j++) {
+				if (headerRow.getCell(j).getStringCellValue().equalsIgnoreCase(fieldName)) {
+					requiredColumn = j;
+					columns.add(requiredColumn);
+					break;
+				}
+			}
+			break;
+		}
+		return columns;
+	}
+
+	public static String getfieldValueWithScenarioName(String scenario, String dealsSheet, String fieldName) {
+		String fieldValue = null;
+		try {
+			deals = workbook.getSheet(dealsSheet);
+			List<Integer> Columns = getscenarioAndRequiredColumnNos(dealsSheet, fieldName);
+			for (int i = 0; i <= deals.getPhysicalNumberOfRows(); i++) {
+				if (deals.getRow(i + 1).getCell(Columns.get(0)).getStringCellValue().equalsIgnoreCase(scenario)) {
+					if (deals.getRow(i + 1).getCell(Columns.get(1)).getCellType().toString()
+							.equalsIgnoreCase("String")) {
+						fieldValue = deals.getRow(i + 1).getCell(Columns.get(1)).getStringCellValue();
+					} else if (deals.getRow(i + 1).getCell(Columns.get(1)).getCellType().toString()
+							.equalsIgnoreCase("Numeric")) {
+						fieldValue = String
+								.valueOf((int) (deals.getRow(i + 1).getCell(Columns.get(1)).getNumericCellValue()));
+					}
+					break;
+				}
+			}
+		} catch (NullPointerException e) {
+		}
+		return fieldValue;
+	}
+
+	public static HashMap gettingAndSettingexcelDataFromExcel(String scenario, String testDataSheet) {
+		excelData.put("Login Name", getfieldValueWithScenarioName(scenario, testDataSheet, "username"));
+		excelData.put("Password", getfieldValueWithScenarioName(scenario, testDataSheet, "pass"));
+		excelData.put("Client Id", getfieldValueWithScenarioName(scenario, testDataSheet, "clientid"));
+		excelData.put("user", getfieldValueWithScenarioName(scenario, testDataSheet, "userid"));
+		excelData.put("pass", getfieldValueWithScenarioName(scenario, testDataSheet, "password"));
+		excelData.put("Company ID", getfieldValueWithScenarioName(scenario, testDataSheet, "companyid"));
+		excelData.put("Country", getfieldValueWithScenarioName(scenario, testDataSheet, "country"));
+		return excelData;
+	}
+
+	public static List noOfEntriesInPaymentForScenario(String scenario, String paymentSheet) {
+		orders = workbook.getSheet(paymentSheet);
+		int ScenarioColumn = 0;
+		Row headerRow = orders.getRow(0);
+		List<Integer> numOfRowsforRequredScenario = new ArrayList<>();
+		getfieldValueWithScenarioName(scenario, paymentSheet, "ScenarioID");
+		for (int j = 0; j < headerRow.getPhysicalNumberOfCells(); j++) {
+			if (headerRow.getCell(j).getStringCellValue().equalsIgnoreCase("ScenarioID")) {
+				ScenarioColumn = j;
+				break;
+			}
+		}
+		for (int i = 1; i < orders.getPhysicalNumberOfRows(); i++) {
+			if (orders.getRow(i).getCell(ScenarioColumn).getStringCellValue().equalsIgnoreCase(scenario)) {
+				numOfRowsforRequredScenario.add(i);
+			}
+		}
+		return numOfRowsforRequredScenario;
+	}
+
+	public static HashMap gettingAndSettingpaymentDataFromExcel(String scenario, String paymentDetailsSheet,
+			int rowNum) {
+		paymentsData.put("bene",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Beneficiary", rowNum));
+		paymentsData.put("bene2",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Bene2", rowNum));
+		paymentsData.put("bene3",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Bene3", rowNum));
+		paymentsData.put("bene4",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Bene4", rowNum));
+		paymentsData.put("loc",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Location", rowNum));
+		paymentsData.put("amt", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Amount", rowNum));
+		paymentsData.put("amt2", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Amount2", rowNum));
+		paymentsData.put("amt3", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Amount3", rowNum));
+		paymentsData.put("amt4", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Amount4", rowNum));
+		paymentsData.put("curr",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Currency", rowNum));
+		paymentsData.put("purpose",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Paymentpurpose", rowNum));
+		paymentsData.put("setmet",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Settlementmethod", rowNum));
+		paymentsData.put("ref",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Reference", rowNum));
+		paymentsData.put("stree",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Streettt", rowNum));
+		paymentsData.put("cty", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "City", rowNum));
+		paymentsData.put("sttat",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "State", rowNum));
+		paymentsData.put("postal", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Zip", rowNum));
+		paymentsData.put("coun",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Country", rowNum));
+		paymentsData.put("bankname",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Bank", rowNum));
+		paymentsData.put("bankacc",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Account", rowNum));
+		paymentsData.put("bankswi",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Swift", rowNum));
+		paymentsData.put("routcode",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Routing", rowNum));
+		paymentsData.put("remm",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Remitter", rowNum));
+		paymentsData.put("fundBy",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Fund By", rowNum));
+		paymentsData.put("fundBy2",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Fund By2", rowNum));
+		paymentsData.put("fundBy3",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Fund By3", rowNum));
+		paymentsData.put("fundBy4",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Fund By4", rowNum));
+	    paymentsData.put("fromacc", 
+			    getmultiplefieldValueWithScenarioName(scenario,paymentDetailsSheet, "From Account", rowNum));
+		   
+		paymentsData.put("toacc",
+		        getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "To Account", rowNum));
+		 
+		paymentsData.put("dat", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Date", rowNum));
+		paymentsData.put("mnth", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Month", rowNum));
+		paymentsData.put("yr", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "Year", rowNum));
+		paymentsData.put("setcur", getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "SettlementCurrency", rowNum));
+		paymentsData.put("lneno",
+				getmultiplefieldValueWithScenarioName(scenario, paymentDetailsSheet, "LineNo", rowNum));
+		System.out.println(paymentsData);
+		return paymentsData;
+	}
+
+	public static String getmultiplefieldValueWithScenarioName(String scenario, String dealsSheet, String fieldName,
+			int rowNum) {
+		String fieldValue = null;
+		orders = workbook.getSheet(dealsSheet);
+		List<Integer> Columns = getscenarioAndRequiredColumnNos(dealsSheet, fieldName);
+		if (rowNum <= orders.getPhysicalNumberOfRows()) {
+			if (orders.getRow(rowNum).getCell(Columns.get(0)).getStringCellValue().equalsIgnoreCase(scenario)) {
+				if (orders.getRow(rowNum).getCell(Columns.get(1)).getCellType().toString().equalsIgnoreCase("String")) {
+					fieldValue = orders.getRow(rowNum).getCell(Columns.get(1)).getStringCellValue();
+				} else if (orders.getRow(rowNum).getCell(Columns.get(1)).getCellType().toString()
+						.equalsIgnoreCase("Numeric")) {
+					fieldValue = String
+							.valueOf((int) (orders.getRow(rowNum).getCell(Columns.get(1)).getNumericCellValue()));
+				}
+			}
+		}
+		return fieldValue;
+	}
+
+	public static void writeDataInExcel(String scenario, String sheetToBeUpdated, String FieldName, String fieldValue)
+			throws IOException {
+		sheet = workbook.getSheet(sheetToBeUpdated);
+		List<Integer> columns = getscenarioAndRequiredColumnNos(sheetToBeUpdated, FieldName);
+		for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+			if (sheet.getRow(i).getCell(columns.get(0)).getStringCellValue().equalsIgnoreCase(scenario)) {
+				sheet.getRow(i).createCell(columns.get(1)).setCellValue(fieldValue);
+				System.out.println("Updated Field " + FieldName + " Value is " + fieldValue);
+				break;
+			}
+		}
+		write();
+	}
+
+	public static void write() {
+		try {
+			File file = new File(System.getProperty("user.dir") + "/src/test/resources/testData/testdata.xlsx");
+			fos = new FileOutputStream(file.getAbsoluteFile());
+			workbook.write(fos);
+			fos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static HashMap gettingAndSettingcampaignDataFromExcel(String scenario, String beneenrollSheet) {
+		campaignData.put("campname", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Campaign Name"));
+		campaignData.put("beneagreemnt",
+				getfieldValueWithScenarioName(scenario, beneenrollSheet, "Beneficiary Agrreement"));
+		campaignData.put("pmname", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Pgm Mgr Name"));
+		campaignData.put("phone", getfieldValueWithScenarioName(scenario, beneenrollSheet, "pgmph"));
+		campaignData.put("emailtemp", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Email Template"));
+		campaignData.put("ddllogo", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Logo"));
+		campaignData.put("signatoryname", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Sign Name"));
+		campaignData.put("signatorytitle", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Sign Title"));
+		return campaignData;
+	}
+
+	public static HashMap gettingAndSettingenrollmentDataFromExcel(String scenario, String beneenrollSheet) {
+		enrollmentData.put("CompanyName", getfieldValueWithScenarioName(scenario, beneenrollSheet, "CompName"));
+		enrollmentData.put("Address", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Addrz"));
+		enrollmentData.put("Benecity", getfieldValueWithScenarioName(scenario, beneenrollSheet, "City"));
+		enrollmentData.put("benecountry", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Country"));
+		enrollmentData.put("benestate", getfieldValueWithScenarioName(scenario, beneenrollSheet, "State"));
+		enrollmentData.put("pc", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Poastal code"));
+		enrollmentData.put("fn", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Frst name"));
+		enrollmentData.put("ln", getfieldValueWithScenarioName(scenario, beneenrollSheet, "last name"));
+		enrollmentData.put("beneemail", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Email"));
+		enrollmentData.put("uname", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Username"));
+		enrollmentData.put("pass", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Password"));
+		enrollmentData.put("Question", getfieldValueWithScenarioName(scenario, beneenrollSheet, "ques"));
+		enrollmentData.put("Answer", getfieldValueWithScenarioName(scenario, beneenrollSheet, "ans"));
+		enrollmentData.put("accnum", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Account Num"));
+		enrollmentData.put("bankname", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Bank name"));
+		enrollmentData.put("bankcity", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Bank City"));
+		enrollmentData.put("curr", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Currency"));
+		enrollmentData.put("Swift", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Swift"));
+		enrollmentData.put("Routing", getfieldValueWithScenarioName(scenario, beneenrollSheet, "Routing"));
+		enrollmentData.put("client1", getfieldValueWithScenarioName(scenario, beneenrollSheet, "client1"));
+		enrollmentData.put("client2", getfieldValueWithScenarioName(scenario, beneenrollSheet, "client2"));
+		return enrollmentData;
+	}
+
+}
